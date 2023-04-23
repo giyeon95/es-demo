@@ -17,33 +17,13 @@ public class UserIndexingService {
     private static final String INDEX_PREFIX_NAME = "user";
     private static final String ALIAS_NAME = "user";
 
-//    @PostConstruct
-//    public void indexingUserDateV1() {
-//        IndexCoordinates indexNameWrapper = IndexUtil.createIndexNameWithPostFixWrapper(INDEX_PREFIX_NAME);
-//        IndexCoordinates aliasNameWrapper = IndexUtil.createIndexNameWrapper(ALIAS_NAME);
-//
-//        Set<String> existIndexNames = userDocumentRepository.findIndexNamesByAlias(aliasNameWrapper); // alias로 등록된 index 조회
-//        userDocumentRepository.saveAll(createMockIndexingUsers(), indexNameWrapper); // index 생성
-//
-//        existIndexNames.forEach(indexName -> {
-//            userDocumentRepository.deleteIndex(IndexCoordinates.of(indexName)); // alias로 등록된 index 삭제
-//        });
-//
-//        userDocumentRepository.setAlias(indexNameWrapper, aliasNameWrapper); // alias 등록
-//    }
-
     @PostConstruct
     public void indexingUserDateV2() {
         IndexCoordinates indexNameWrapper = IndexUtil.createIndexNameWithPostFixWrapper(INDEX_PREFIX_NAME);
         IndexCoordinates aliasNameWrapper = IndexUtil.createIndexNameWrapper(ALIAS_NAME);
 
-        Set<String> existIndexNames = userDocumentRepository.findIndexNamesByAlias(aliasNameWrapper); // alias로 등록된 index 조회
         userDocumentRepository.saveAll(createMockIndexingUsers(), indexNameWrapper); // index 생성
-
         userDocumentRepository.updateAliases(indexNameWrapper, aliasNameWrapper); // alias 업데이트
-//        existIndexNames.forEach(indexName -> {
-//            userDocumentRepository.deleteIndex(IndexCoordinates.of(indexName)); // alias로 등록된 index 삭제
-//        });
     }
 
 

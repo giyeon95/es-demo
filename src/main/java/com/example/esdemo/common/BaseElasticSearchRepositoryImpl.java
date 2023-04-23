@@ -68,6 +68,10 @@ public class BaseElasticSearchRepositoryImpl<T> implements BaseElasticSearchRepo
      * @return
      */
     private Remove aliasRemoveAction(IndexCoordinates aliasNameWrapper, Set<String> existIndexNames) {
+        if (existIndexNames.isEmpty()) {
+            return null;
+        }
+
         return new Remove(AliasActionParameters.builder()
             .withIndices(existIndexNames.toArray(String[]::new))
             .withAliases(aliasNameWrapper.getIndexName())
