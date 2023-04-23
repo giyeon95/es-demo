@@ -19,11 +19,19 @@ public class BaseElasticSearchRepositoryImpl<T> implements BaseElasticSearchRepo
 
     @Override
     public <S extends T> S save(S entity, IndexCoordinates indexName) {
+        if (!operations.indexOps(indexName).exists()) {
+            throw new IllegalStateException("Index not exist: " + indexName.getIndexName());
+        }
+
         return operations.save(entity, indexName);
     }
 
     @Override
     public <S extends T> Iterable<S> saveAll(Iterable<S> entities, IndexCoordinates indexName) {
+        if (!operations.indexOps(indexName).exists()) {
+            throw new IllegalStateException("Index not exist: " + indexName.getIndexName());
+        }
+
         return operations.save(entities, indexName);
     }
 
