@@ -7,6 +7,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface BaseElasticSearchRepository<T> {
 
+    boolean createIndex(Class<T> clazz, IndexCoordinates indexName);
+
     <S extends T> S save(S entity, IndexCoordinates indexName);
 
     <S extends T> Iterable<S> saveAll(Iterable<S> entities, IndexCoordinates indexName);

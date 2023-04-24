@@ -18,8 +18,16 @@ public class BaseElasticSearchRepositoryImpl<T> implements BaseElasticSearchRepo
     private final ElasticsearchOperations operations;
 
     @Override
+    public boolean createIndex(Class<T> clazz, IndexCoordinates indexName) {
+        IndexOperations indexOperations = operations.indexOps(clazz);
+
+        // copy clazz settings and mappings and setting indexName
+        return operations.indexOps(indexName).create(indexOperations.createSettings(), indexOperations.createMapping());
+    }
+
+    @Override
     public <S extends T> S save(S entity, IndexCoordinates indexName) {
-        if (!operations.indexOps(indexName).exists()) {
+        if (!operations.indexOps(indexName).exists()) { // "settings.mapper.dynamic": false 시에는 해당로직 제거 가능
             throw new IllegalStateException("Index not exist: " + indexName.getIndexName());
         }
 
@@ -28,7 +36,7 @@ public class BaseElasticSearchRepositoryImpl<T> implements BaseElasticSearchRepo
 
     @Override
     public <S extends T> Iterable<S> saveAll(Iterable<S> entities, IndexCoordinates indexName) {
-        if (!operations.indexOps(indexName).exists()) {
+        if (!operations.indexOps(indexName).exists()) { // "settings.mapper.dynamic": false 시에는 해당로직 제거 가능
             throw new IllegalStateException("Index not exist: " + indexName.getIndexName());
         }
 
@@ -58,6 +66,7 @@ public class BaseElasticSearchRepositoryImpl<T> implements BaseElasticSearchRepo
 
     /**
      * aliasNameWrapper에 indexNameWrapper의 index를 추가하는 AliasAction 생성
+     *
      * @param aliasNameWrapper
      * @param indexCoordinates
      * @return
@@ -71,6 +80,7 @@ public class BaseElasticSearchRepositoryImpl<T> implements BaseElasticSearchRepo
 
     /**
      * aliasNameWrapper에 존재하는 index를 제거하는 AliasAction 생성
+     *
      * @param aliasNameWrapper
      * @param existIndexNames
      * @return
