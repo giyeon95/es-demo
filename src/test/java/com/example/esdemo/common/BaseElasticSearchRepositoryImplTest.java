@@ -1,6 +1,7 @@
 package com.example.esdemo.common;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.example.esdemo.ElasticSearchTestConfig;
@@ -9,6 +10,7 @@ import com.example.esdemo.util.IndexUtil;
 import com.jayway.jsonpath.JsonPath;
 import java.io.IOException;
 import java.util.Set;
+import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
@@ -114,6 +116,44 @@ class BaseElasticSearchRepositoryImplTest {
             () -> assertThat(afterUpdateIndexNamesByAlias).hasSize(1)
         );
     }
+
+
+    @Test
+    @DisplayName("beforeDay에 해당되지 않은 Index는 삭제되지 않는다.")
+    void notDeleteTest() throws IOException {
+        // given
+        IndexCoordinates indexName = IndexUtil.createIndexNameWithPostFixWrapper("test");
+        baseElasticSearchRepository.createIndex(TestDocument.class, indexName);
+
+        // when
+        baseElasticSearchRepository.deleteIndex(IndexUtil.createIndexNameWithBeforeDateWildcardFixWrapper("test", 1));
+
+        // then
+        GetMappingsResponse response = client.indices().getMapping(new GetMappingsRequest()
+                .indices(indexName.getIndexName()),
+            RequestOptions.DEFAULT);
+
+        assertThat(response.mappings().get(indexName.getIndexName())).isNotNull();
+    }
+
+    @Test
+    @DisplayName("beforeDay에 지정된 날짜의 Index 가 전부 삭제된다.")
+    void deleteTest() {
+        // given
+        String indexNameStr = "test";
+        IndexCoordinates indexName = IndexUtil.createIndexNameWithPostFixWrapper(indexNameStr);
+        baseElasticSearchRepository.createIndex(TestDocument.class, indexName);
+
+        // when
+        int beforeDay = 0;
+        baseElasticSearchRepository.deleteIndex(IndexUtil.createIndexNameWithBeforeDateWildcardFixWrapper(indexNameStr, beforeDay));
+
+        // then
+        assertThatExceptionOfType(ElasticsearchStatusException.class).isThrownBy(() ->
+            client.indices().getMapping(new GetMappingsRequest().indices(indexName.getIndexName()), RequestOptions.DEFAULT)
+        ).withMessageContaining("no such index");
+    }
+
 
     @Test
     @DisplayName("elasticsearch 환경이 격리되어 있어야 한다.")

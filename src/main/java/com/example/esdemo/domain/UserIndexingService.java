@@ -19,11 +19,13 @@ public class UserIndexingService {
 
     @PostConstruct
     public void indexingUserDateV2() {
-        IndexCoordinates indexNameWrapper = IndexUtil.createIndexNameWithPostFixWrapper(INDEX_PREFIX_NAME);
+        IndexCoordinates indexName = IndexUtil.createIndexNameWithPostFixWrapper(INDEX_PREFIX_NAME);
         IndexCoordinates aliasNameWrapper = IndexUtil.createIndexNameWrapper(ALIAS_NAME);
 
-        userDocumentRepository.saveAll(createMockIndexingUsers(), indexNameWrapper); // index 생성
-        userDocumentRepository.updateAliases(indexNameWrapper, aliasNameWrapper); // alias 업데이트
+        userDocumentRepository.createIndex(UserDocument.class, indexName); // index 생성
+        userDocumentRepository.updateAliases(indexName, aliasNameWrapper); // alias 지정
+        userDocumentRepository.saveAll(createMockIndexingUsers(), indexName); // 데이터 저장
+        userDocumentRepository.deleteIndex(IndexUtil.createIndexNameWithBeforeDateWildcardFixWrapper(INDEX_PREFIX_NAME, 7)); // 7일 이전 index 삭제
     }
 
 
